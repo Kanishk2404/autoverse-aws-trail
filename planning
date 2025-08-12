@@ -22,4 +22,5 @@ now there are 2 options in it as well ->
 -> hosting frontend on s3 bucket is industry level and for production , comparatively easy but as for now i want to learn so
 let's go with hosting boht on ec2 so that i can  learn.
 
+-> let postgre be on railway as of now.
 .
