@@ -1,0 +1,31 @@
+launch an ec2 micro instance
+attach vpc , subnets to it 
+make elastic ip as when we stop instance or it crashes or whatever resaon it's ip might change so attaching elastic ip to ec2 makes it permanent.
+then go to route 53;
+
+2) Create Route 53 Hosted Zone and note the NS records
+Route 53 → Hosted zones → Create Hosted Zone → domain: kanishksaraswat.me.
+
+Copy the 4 NS nameservers Route 53 gives you (you’ll paste them at Namecheap later).
+
+Why: Route 53 lets AWS services and CloudFront integrate cleanly and gives you stable, fast DNS.
+
+ Change your domain registrar nameservers → Route 53
+In Namecheap (or your registrar) replace their default nameservers with the 4 Route 53 nameservers.
+
+IMPORTANT: Before switching, optionally create the A record in Route 53 so it resolves immediately after propagation.
+
+Why: Switching NS to Route 53 makes Route 53 authoritative for your domain.
+
+) (Optional) Create Route 53 A record to Elastic IP
+In your hosted zone, create an A record:
+
+Name: @
+
+Type: A
+
+Value: <your Elastic IP>
+
+TTL: leave default
+
+Why: This connects kanishksaraswat.me → Elastic IP.
