@@ -1,0 +1,106 @@
+# Navigate to frontend directory
+cd /var/www/autoverse/frontend
+
+# Update environment variables for production
+nano .env
+# Add: VITE_API_URL=/api (for relative API calls)
+
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+
+# Create nginx web directory
+sudo mkdir -p /var/www/html
+
+# Copy build files to nginx root
+sudo cp -r /var/www/autoverse/frontend/dist/* /var/www/html/
+
+# Set proper permissions
+sudo chown -R www-data:www-data /var/www/html
+sudo chmod -R 755 /var/www/html
+
+# Create/edit nginx configuration
+sudo nano /etc/nginx/sites-available/autoverse
+
+
+server {
+    listen 80;
+    server_name kanishksaraswat.me 13.203.140.245;
+    
+    root /var/www/html;
+    index index.html index.htm;
+
+    # React SPA routing support
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # API proxy to backend
+    location /api/ {
+        rewrite ^/api/(.*) /$1 break;
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+
+# Enable the site
+sudo ln -s /etc/nginx/sites-available/autoverse /etc/nginx/sites-enabled/
+
+# Test nginx configuration
+sudo nginx -t
+
+# Restart nginx
+sudo systemctl restart nginx
+
+# Test deployment
+curl http://13.203.140.245/  # Should return React HTML
+curl http://13.203.140.245/api/  # Should return "API is running!"
+
+
+# Install SSL certificate with certbot
+sudo certbot --nginx -d kanishksaraswat.me
+
+# Follow prompts:
+# - Enter email: saraswatkanishk24@gmail.com
+# - Agree to Terms of Service: Y
+# - Share email with EFF: Y
+
+# Verify SSL certificate
+sudo certbot certificates
+openssl s_client -connect kanishksaraswat.me:443 -servername kanishksaraswat.me
+
+
+# HTTP (should redirect to HTTPS)
+curl http://kanishksaraswat.me
+
+# HTTPS frontend
+curl https://kanishksaraswat.me
+
+# HTTPS API
+curl https://kanishksaraswat.me/api/
+
+# Check SSL headers
+curl -I https://kanishksaraswat.me
+
+
+# Backend process status
+pm2 status
+
+# Nginx service status
+sudo systemctl status nginx
+
+# SSL certificate status
+sudo certbot certificates
+
+
+also make sure to update frontend env according to backend like in this case it is /api
